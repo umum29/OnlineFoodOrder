@@ -1,17 +1,19 @@
 using OnlineOrderApi.Models;
+using OnlineOrderApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace OnlineOrderApi.Tests
 {
-  using OnlineOrderApi.Models;
-  using OnlineOrderApi.Data;
-
-  public class DummyDataDBInitializer
+  public class SeedDataFixture : IDisposable
   {
-    public void Seed(ApplicationDataContext context)
-    {
-      context.Database.EnsureDeleted();
-      context.Database.EnsureCreated();
+    public ApplicationDataContext _context { get; private set; }
 
+    public SeedDataFixture()
+    {
+      var dbContextOptions = new DbContextOptionsBuilder<ApplicationDataContext>()
+        .UseInMemoryDatabase(databaseName: "OnlineOrder")
+        .Options;
+      _context = new ApplicationDataContext(dbContextOptions);
       var studentGrades = new List<StudentGrade>()
         {
           new StudentGrade()
@@ -39,7 +41,12 @@ namespace OnlineOrderApi.Tests
             }
           }
           };
-      context.SaveChanges();
+      _context.StudentGrade.AddRange(studentGrades);
+      _context.SaveChanges();
+    }
+    public void Dispose()
+    {
+      _context.Dispose();
     }
   }
 }
