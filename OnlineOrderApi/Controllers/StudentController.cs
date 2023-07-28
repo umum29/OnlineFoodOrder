@@ -75,7 +75,7 @@ namespace OnlineOrderApi.Controllers
           _response.StatusCode = HttpStatusCode.NotFound;
           return NotFound(_response);
         }
-        _response.Result = student;
+        _response.Result = _mapper.Map<StudentDTO>(student);
         _response.StatusCode = HttpStatusCode.OK;
         return Ok(_response);
       }

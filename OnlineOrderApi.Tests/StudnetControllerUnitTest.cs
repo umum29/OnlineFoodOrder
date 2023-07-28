@@ -7,7 +7,7 @@ using OnlineOrderApi.Repository;
 using OnlineOrderApi.Repository.Interface;
 using AutoMapper;
 using System.Net;
-using Microsoft.EntityFrameworkCore.InMemory;//dotnet add package Microsoft.EntityFrameworkCore.InMemory
+using Moq;
 
 
 namespace OnlineOrderApi.Tests;
@@ -45,18 +45,41 @@ public class StudentControllerUnitTest : IClassFixture<SeedDataFixture>
     var controller = new StudentController(_repository, _mapper);
     //Act
     var response = await controller.GetStudents();
+    //must convert each object step by step
     var okResult = response.Result as ObjectResult;
     APIResponse apiResponse = okResult.Value as APIResponse;
     List<Dto.StudentDTO> studentList = apiResponse.Result as List<Dto.StudentDTO>;
 
-    //OkObjectResult okResult = (OkObjectResult)response.Result;
     //Assert
     Assert.NotNull(apiResponse);
     Assert.Equal(2, studentList.Count);
-    //Assert
     //Assert.IsType<OkObjectResult>(response);
-    //Assert.Equal(true, response.Result.Value.IsSuccess);
-    //Assert.NotNull(response.Result);
+  }
+  [Fact]
+  public async void GetStudent_IdAsParameter_ReturnSingleStudent()
+  {
+    //Arrange
+    var mockRepository = new Mock<IStudentRepository>();
+    int testStudentId = 2;
+    Student mockResult = new Student() { Id = 2, StudentName = "Tom" };
+    mockRepository.Setup(x => x.GetAsync(x => x.Id == testStudentId, true)).Returns(Task.FromResult(mockResult));
+    /*
+    mockRepository.Setup(x => x.GetById(42))
+        .Returns(new Product { Id = 42 });
+        */
 
+    var controller = new StudentController(mockRepository.Object, _mapper);
+    //Act
+    var response = await controller.GetStudent(2);
+    //must convert each object step by step
+    var okResult = response.Result as ObjectResult;
+    APIResponse apiResponse = okResult.Value as APIResponse;
+    Dto.StudentDTO studentData = apiResponse.Result as Dto.StudentDTO;
+
+    //Assert
+    Assert.NotNull(apiResponse);
+    Assert.Equal(2, studentData.Id);
+    Assert.Equal("Tom", studentData.StudentName);
+    //Assert.IsType<OkObjectResult>(response);
   }
 }

@@ -44,6 +44,9 @@ namespace OnlineOrderApi.Tests
       _context.StudentGrade.AddRange(studentGrades);
       _context.SaveChanges();
     }
+    /// <summary>
+    /// drop database after all executions.
+    /// </summary
     public void Dispose()
     {
       _context.Dispose();
