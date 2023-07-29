@@ -8,7 +8,7 @@ using OnlineOrderApi.Repository.Interface;
 using AutoMapper;
 using System.Net;
 using Moq;
-
+using System.Linq.Expressions;
 
 namespace OnlineOrderApi.Tests;
 public class StudentControllerUnitTest : IClassFixture<SeedDataFixture>
@@ -63,10 +63,6 @@ public class StudentControllerUnitTest : IClassFixture<SeedDataFixture>
     int testStudentId = 2;
     Student mockResult = new Student() { Id = 2, StudentName = "Tom" };
     mockRepository.Setup(x => x.GetAsync(x => x.Id == testStudentId, true)).Returns(Task.FromResult(mockResult));
-    /*
-    mockRepository.Setup(x => x.GetById(42))
-        .Returns(new Product { Id = 42 });
-        */
 
     var controller = new StudentController(mockRepository.Object, _mapper);
     //Act
@@ -81,5 +77,74 @@ public class StudentControllerUnitTest : IClassFixture<SeedDataFixture>
     Assert.Equal(2, studentData.Id);
     Assert.Equal("Tom", studentData.StudentName);
     //Assert.IsType<OkObjectResult>(response);
+  }
+  [Fact]
+  public async void AddStudent_StudentDTOasParameter_ReturnStudentWithNewId()
+  {
+    //Arrange
+    var controller = new StudentController(_repository, _mapper);
+    Dto.StudentCreateDTO createDTO = new Dto.StudentCreateDTO() { StudentName = "MichaelJordan" };
+    //Act
+    var response = await controller.PostStudent(createDTO, 2);
+    //must convert each object step by step
+    var okResult = response.Result as ObjectResult;
+    APIResponse apiResponse = okResult.Value as APIResponse;
+    Dto.StudentDTO studentData = apiResponse.Result as Dto.StudentDTO;
+
+    //Assert
+    Assert.NotNull(apiResponse);
+    Assert.NotNull(studentData.Id);
+    Assert.True(studentData.Id > 2);
+    //Assert.IsType<OkObjectResult>(response);
+  }
+  [Fact]
+  public async void PutStudent_StudentDTOasParameter_Return()
+  {
+    //Arrange
+    var mockRepository = new Mock<IStudentRepository>();
+    //int testStudentId = 2;
+    //Student mockUpdateStudent = new Student() { Id = testStudentId, StudentName = "ChangedSuccessfulStudentName" };
+    Student mockResult = new Student() { Id = 2, StudentName = "Tom" };
+    mockRepository.Setup(x => x.UpdateAsync(It.IsAny<Student>()))
+                  .Callback(() => { return; }); ;
+    mockRepository.Setup(x => x.GetAsync(It.IsAny<Expression<Func<Student, bool>>>(), It.IsAny<bool>()))
+                  .Returns(Task.FromResult(mockResult));
+
+    var controller = new StudentController(mockRepository.Object, _mapper);
+    Dto.StudentUpdateDTO updateDto = new Dto.StudentUpdateDTO() { Id = 2, StudentName = "ChangedSuccessfulStudentName" };
+    //Act
+    var response = await controller.PutStudent(2, updateDto);
+    //must convert each object step by step
+    var okResult = response.Result as ObjectResult;
+    APIResponse apiResponse = okResult.Value as APIResponse;
+
+    //Assert
+    Assert.NotNull(apiResponse);
+    Assert.True(apiResponse.IsSuccess);
+    Assert.Equal(HttpStatusCode.NoContent, apiResponse.StatusCode);
+  }
+  [Fact]
+  public async void DeleteStudent_StudentIdasParameter_Return()
+  {
+    //Arrange
+    var mockRepository = new Mock<IStudentRepository>();
+    //Student mockUpdateStudent = new Student() { Id = testStudentId, StudentName = "ChangedSuccessfulStudentName" };
+    Student mockResult = new Student() { Id = 2, StudentName = "Tom" };
+    mockRepository.Setup(x => x.RemoveManyToManyAsync(It.IsAny<Student>()))
+                  .Callback(() => { return; }); ;
+    mockRepository.Setup(x => x.GetAsync(It.IsAny<Expression<Func<Student, bool>>>(), It.IsAny<bool>()))
+                  .Returns(Task.FromResult(mockResult));
+
+    var controller = new StudentController(mockRepository.Object, _mapper);
+    //Act
+    var response = await controller.DeleteStudent(2);
+    //must convert each object step by step
+    var okResult = response.Result as ObjectResult;
+    APIResponse apiResponse = okResult.Value as APIResponse;
+
+    //Assert
+    Assert.NotNull(apiResponse);
+    Assert.True(apiResponse.IsSuccess);
+    Assert.Equal(HttpStatusCode.NoContent, apiResponse.StatusCode);
   }
 }
