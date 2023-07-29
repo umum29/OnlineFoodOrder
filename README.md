@@ -1,7 +1,7 @@
 # These two projects show how to implement Many-to-Many relations in EntityFrameworkCore, and How to test WebApiController in XUnit.
 
 In **OnlineOrderApi** project, **Student** and **Grade** are the many-to-many relation.  
-We use Sqlite/EntityFrameworkCore 7/NET 7 to implement it.
+We use Sqlite/EntityFrameworkCore 7/NET 7/Moq to implement it.
 
 In **OnlineOrderApi.Tests** project, we use XUnit to test it.  
 Please remember to restore the project first.
