@@ -22,6 +22,7 @@ namespace OnlineOrderApi.Repository
     }
     public async Task<T> GetAsync(Expression<Func<T, bool>> filter = null, bool tracking = true)
     {
+      //dbSet also implement IQueryable<T>
       IQueryable<T> query = dbSet;
       if (!tracking)
       {
